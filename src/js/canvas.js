@@ -19,6 +19,22 @@ addEventListener('mousemove', (event) => {
   mouse.y = event.clientY
 })
 
+const gravity = 0.01
+const friction=0.99
+const power=10
+
+let Particles
+Particles = []
+addEventListener('click', event => {
+  let particleCount = 400
+  mouse.x = event.clientX
+  mouse.y = event.clientY
+  const angleIncrement=Math.PI*2/particleCount
+  for (let i = 0; i < particleCount; i++) {
+    Particles.push(new Circle(mouse.x,mouse.y,2,`hsl(${Math.random()*360},50%,50%)`,{x:Math.cos(angleIncrement *i)*Math.random()*power,y:Math.sin(angleIncrement*i)*Math.random()*power}))
+  }
+})
+
 addEventListener('resize', () => {
   canvas.width = innerWidth
   canvas.height = innerHeight
@@ -27,31 +43,45 @@ addEventListener('resize', () => {
 })
 
 // Objects
-class Object {
-  constructor(x, y, radius, color) {
+class Circle {
+  constructor(x, y, radius, color,velocity) {
     this.x = x
     this.y = y
     this.radius = radius
-    this.color = color
+    this.color = color,
+      this.velocity = velocity
+      this.alpha=1
   }
+ 
 
-  draw() {
+  draw () {
+    c.save()
+    c.globalAlpha=this.apha
     c.beginPath()
     c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
     c.fillStyle = this.color
     c.fill()
     c.closePath()
+    c.restore()
   }
 
   update() {
     this.draw()
+  
+    this.velocity.x *= friction
+    this.velocity.y*=friction
+    this.velocity.y+=gravity
+    this.x += this.velocity.x
+    this.y += this.velocity.y
+    this.alpha-=0.004
+  
   }
 }
 
 // Implementation
-let objects
+// let Particles
 function init() {
-  objects = []
+  // Particles = []
 
   for (let i = 0; i < 400; i++) {
     // objects.push()
@@ -61,13 +91,21 @@ function init() {
 // Animation Loop
 function animate() {
   requestAnimationFrame(animate)
-  c.clearRect(0, 0, canvas.width, canvas.height)
+  c.fillStyle='rgba(0,0,0,0.05)'
+  c.fillRect(0, 0, canvas.width, canvas.height)
 
-  c.fillText('HTML CANVAS BOILERPLATE', mouse.x, mouse.y)
-  // objects.forEach(object => {
-  //  object.update()
-  // })
+  // c.fillText('HTML CANVAS BOILERPLATE', mouse.x, mouse.y)
+  Particles.forEach((Particle,i )=> {
+    if (Particle.alpha>0) {
+      Particle.update()
+    } else {
+      Particles.splice(i,1)
+    }
+  
+  })
 }
 
-init()
+// init()
 animate()
+
+

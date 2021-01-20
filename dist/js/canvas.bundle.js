@@ -118,47 +118,73 @@ addEventListener('mousemove', function (event) {
   mouse.x = event.clientX;
   mouse.y = event.clientY;
 });
+var gravity = 0.01;
+var friction = 0.99;
+var power = 10;
+var Particles;
+Particles = [];
+addEventListener('click', function (event) {
+  var particleCount = 400;
+  mouse.x = event.clientX;
+  mouse.y = event.clientY;
+  var angleIncrement = Math.PI * 2 / particleCount;
+
+  for (var i = 0; i < particleCount; i++) {
+    Particles.push(new Circle(mouse.x, mouse.y, 2, "hsl(".concat(Math.random() * 360, ",50%,50%)"), {
+      x: Math.cos(angleIncrement * i) * Math.random() * power,
+      y: Math.sin(angleIncrement * i) * Math.random() * power
+    }));
+  }
+});
 addEventListener('resize', function () {
   canvas.width = innerWidth;
   canvas.height = innerHeight;
   init();
 }); // Objects
 
-var _Object = /*#__PURE__*/function () {
-  function Object(x, y, radius, color) {
-    _classCallCheck(this, Object);
+var Circle = /*#__PURE__*/function () {
+  function Circle(x, y, radius, color, velocity) {
+    _classCallCheck(this, Circle);
 
     this.x = x;
     this.y = y;
     this.radius = radius;
-    this.color = color;
+    this.color = color, this.velocity = velocity;
+    this.alpha = 1;
   }
 
-  _createClass(Object, [{
+  _createClass(Circle, [{
     key: "draw",
     value: function draw() {
+      c.save();
+      c.globalAlpha = this.apha;
       c.beginPath();
       c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
       c.fillStyle = this.color;
       c.fill();
       c.closePath();
+      c.restore();
     }
   }, {
     key: "update",
     value: function update() {
       this.draw();
+      this.velocity.x *= friction;
+      this.velocity.y *= friction;
+      this.velocity.y += gravity;
+      this.x += this.velocity.x;
+      this.y += this.velocity.y;
+      this.alpha -= 0.004;
     }
   }]);
 
-  return Object;
+  return Circle;
 }(); // Implementation
+// let Particles
 
-
-var objects;
 
 function init() {
-  objects = [];
-
+  // Particles = []
   for (var i = 0; i < 400; i++) {// objects.push()
   }
 } // Animation Loop
@@ -166,13 +192,19 @@ function init() {
 
 function animate() {
   requestAnimationFrame(animate);
-  c.clearRect(0, 0, canvas.width, canvas.height);
-  c.fillText('HTML CANVAS BOILERPLATE', mouse.x, mouse.y); // objects.forEach(object => {
-  //  object.update()
-  // })
-}
+  c.fillStyle = 'rgba(0,0,0,0.05)';
+  c.fillRect(0, 0, canvas.width, canvas.height); // c.fillText('HTML CANVAS BOILERPLATE', mouse.x, mouse.y)
 
-init();
+  Particles.forEach(function (Particle, i) {
+    if (Particle.alpha > 0) {
+      Particle.update();
+    } else {
+      Particles.splice(i, 1);
+    }
+  });
+} // init()
+
+
 animate();
 
 /***/ }),
